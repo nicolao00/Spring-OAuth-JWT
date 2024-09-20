@@ -1,5 +1,7 @@
 package com.example.springoauth2jwt.config;
 
+import com.example.springoauth2jwt.jwt.JWTUtil;
+import com.example.springoauth2jwt.oauth2.CustomSuccessHandler;
 import com.example.springoauth2jwt.service.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +18,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
+    private final CustomSuccessHandler customSuccessHandler;
+    private final JWTUtil jwtUtil;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -34,8 +38,12 @@ public class SecurityConfig {
         //oauth2
         http
                 .oauth2Login((oauth) -> oauth
+                        // 커스텀한 OAuth2UserService 등록
                         .userInfoEndpoint((userInfoEndpointConfig -> userInfoEndpointConfig
-                                .userService(customOAuth2UserService))));
+                                .userService(customOAuth2UserService)))
+                        // 커스텀 한 핸들러 등록
+                        .successHandler(customSuccessHandler));
+
 
         //경로별 인가 작업
         http
