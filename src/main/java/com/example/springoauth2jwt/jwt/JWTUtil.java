@@ -36,14 +36,28 @@ public class JWTUtil {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getExpiration().before(new Date());
     }
 
-    public String createJwt(String username, String role, Long expiredMs) {
+    public String getCategory(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().get("category", String.class);
+    }
 
-        Claims claims = Jwts.claims();
-        claims.put("username", username);
-        claims.put("role", role);
+    public String createJwt(String category, String username, String role, Long expiredMs) {
 
+//        Claims claims = Jwts.claims();
+//        claims.put("username", username);
+//        claims.put("role", role);
+//
+//        return Jwts.builder()
+//                .setClaims(claims)
+//                .setIssuedAt(new Date(System.currentTimeMillis()))
+//                .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+
+        // 액세스, 리프레시 토큰 발행
         return Jwts.builder()
-                .setClaims(claims)
+                .claim("category", category)
+                .claim("username", username)
+                .claim("role", role)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(key, SignatureAlgorithm.HS256)
