@@ -34,7 +34,6 @@ public class ReissueController {
         for (Cookie cookie : cookies) {
 
             if (cookie.getName().equals("refresh")) {
-
                 refresh = cookie.getValue();
             }
         }
@@ -68,11 +67,31 @@ public class ReissueController {
 
         //make new JWT
         String newAccess = jwtUtil.createJwt("access", username, role, 600000L);
+        // Access 토큰 재발행시 Refresh 토큰도 재발행 (Refresh Rotate)
+        String newRefresh = jwtUtil.createJwt("refresh", username, role, 86400000L);
+
+
 
         //response
         response.setHeader("access", newAccess);
+        // Access 토큰 재발행시 Refresh 토큰도 재발행 (Refresh Rotate)
+        // 주의 ! Rotate 되기 이전 Refresh 토큰을 가지고 서버로 가도 인증이 되기 때문에 발급했던 Refresh 토큰을 기억한 뒤, 블랙리스트 처리하는 로직이 필요하다!
+        response.addCookie(createCookie("refresh", newRefresh));
+
 
         return new ResponseEntity<>(HttpStatus.OK);
 
     }
+
+    private Cookie createCookie(String key, String value) {
+
+        Cookie cookie = new Cookie(key, value);
+        cookie.setMaxAge(24*60*60);
+        //cookie.setSecure(true);
+        //cookie.setPath("/");
+        cookie.setHttpOnly(true);
+
+        return cookie;
+    }
+
 }
