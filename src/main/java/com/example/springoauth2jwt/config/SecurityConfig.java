@@ -87,6 +87,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/").permitAll()
+                        // 토큰이 만료된 상태이므로 로그인이 불가능한 상태일 것으로 모든 사용자가 접근 가능하도록 열어둠
+                        .requestMatchers("/reissue").permitAll()
                         .anyRequest().authenticated());
 
         //세션 설정 : STATELESS
