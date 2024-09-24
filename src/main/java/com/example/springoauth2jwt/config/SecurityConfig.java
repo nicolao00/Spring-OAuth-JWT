@@ -1,8 +1,10 @@
 package com.example.springoauth2jwt.config;
 
+import com.example.springoauth2jwt.jwt.CustomLogoutFilter;
 import com.example.springoauth2jwt.jwt.JWTFilter;
 import com.example.springoauth2jwt.jwt.JWTUtil;
 import com.example.springoauth2jwt.oauth2.CustomSuccessHandler;
+import com.example.springoauth2jwt.repository.RefreshRepository;
 import com.example.springoauth2jwt.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -28,6 +31,7 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
+    private final RefreshRepository refreshRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -71,7 +75,9 @@ public class SecurityConfig {
                 // 필터 위치에 따라 OAuth2 인증을 진행하는 필터보다 JWTFilter가 앞에 존재하는 경우 아래와 같은 오류가 발생할 수 있습니다.
                 // 1.재로그인 2. JWT 만료 → 거절 3. OAuth2 로그인 실패 → 재요청 4. 무한 루프
                 //.addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
-                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class);
+                .addFilterAfter(new JWTFilter(jwtUtil), OAuth2LoginAuthenticationFilter.class)
+                // 커스텀한 로그아웃 필터 적용
+                .addFilterBefore(new CustomLogoutFilter(jwtUtil, refreshRepository), LogoutFilter.class);
 
         //oauth2
         http
